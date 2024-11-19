@@ -7,7 +7,7 @@ function sendEmailIfTimeExpired() {
      * @description The script will send an email to this address if the time has expired.
      * Note that you need to grant permission to the script to send emails via your email.
      */
-    var recipient = "ramtinkosari@gmail.com"; // Replace with your email
+    var recipient = "ramtinkosari@gmail.com";
     /**
      * Array of Cells to Check
      * @abstract Cells to check for time expiration
@@ -65,10 +65,14 @@ function sendEmailIfTimeExpired() {
             var lastEmailTime = scriptProperties.getProperty(lastEmailKey);
             //-- Send Email if the Last Email was Sent More than the Interval
             if (!lastEmailTime || (currentTime - parseInt(lastEmailTime, 10)) > emailInterval) {
+                //-- Calculate Time Difference
+                var timeDifference = currentTime - timeLeft;
+                //-- Format Time Difference
+                var timeAgoMessage = formatTimeDifference(timeDifference);
                 //-- Email Subject
                 var subject = "Time Alert: Deadline Reached";
                 //-- Email Message
-                var message = `Time of Plan '${cellContent}' has been Passed since ${new Date(timeLeft).toLocaleString()}.`;
+                var message = `Time of Plan '${cellContent}' has been Passed about ${timeAgoMessage} (${new Date(timeLeft).toLocaleString()}).`;
                 //-- Send Email
                 GmailApp.sendEmail(recipient, subject, message);
                 //-- Save the Last Email Time
@@ -76,4 +80,41 @@ function sendEmailIfTimeExpired() {
             }
         }
     });
+}
+
+/**
+ * Format Time Difference
+ * @param {number} timeDifference
+ * @description Format the time difference to a human-readable
+ * @example Here is an example of the time difference:
+ * 10 seconds ago, 5 minutes ago, 3 hours ago, 2 days ago, ... 
+ * @returns 
+ */
+function formatTimeDifference(timeDifference) {
+    //-- Convert Time Difference to Seconds
+    var seconds = Math.floor(timeDifference / 1000);
+    //-- Convert to Minutes
+    var minutes = Math.floor(seconds / 60);
+    //-- Convert to Hours
+    var hours = Math.floor(minutes / 60);
+    //-- Convert to Days
+    var days = Math.floor(hours / 24);
+    //-- Convert to Years
+    var years = Math.floor(days / 365);
+    //-- Convert to Months
+    var months = Math.floor((days % 365) / 30);
+    //-- Calculate Remaining Time
+    if (years > 0) {
+        return `${years} year${years > 1 ? 's' : ''} ago`;
+    } else if (months > 0) {
+        return `${months} month${months > 1 ? 's' : ''} ago`;
+    } else if (days > 0) {
+        return `${days} day${days > 1 ? 's' : ''} ago`;
+    } else if (hours > 0) {
+        return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (minutes > 0) {
+        return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else {
+        return `${seconds} second${seconds > 1 ? 's' : ''} ago`;
+    }
 }
